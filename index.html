@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Calculator</title>
+    <link rel="stylesheet" href="build/style.css">
+  </head>
+  <body>
+      <div class="calculator-container">
+        <div class="calculator-display"><span class="calculator-display__text"></span></div>
+        <button class="calculator-button" id="clear">AC</button>
+        <button class="calculator-button" id="delete">DEL</button>
+        <button class="calculator-button" id="reverse-sign">+/-</button>
+        <button class="calculator-button operator" id="divide">/</button>
+        <button class="calculator-button number">7</button>
+        <button class="calculator-button number">8</button>
+        <button class="calculator-button number">9</button>
+        <button class="calculator-button operator" id="multiply">X</button>
+        <button class="calculator-button number">4</button>
+        <button class="calculator-button number">5</button>
+        <button class="calculator-button number">6</button>
+        <button class="calculator-button operator" id="subtract">-</button>
+        <button class="calculator-button number">1</button>
+        <button class="calculator-button number">2</button>
+        <button class="calculator-button number">3</button>
+        <button class="calculator-button operator" id="add">+</button>
+        <button class="calculator-button calculator-button__zero number">0</button>
+        <button class="calculator-button" id="decimal">.</button>
+        <button class="calculator-button" id="execute">=</div>
+      </div>
+  </body>
+  <script>
+      // Variable definitions
+      let display = document.querySelector(".calculator-display__text");
+      let displayScreen = document.querySelector(".calculator-display");
+      let selectedOperator = null;
+      let firstParam = null;
+      let secondParam = null;
+      let executedFlag = 0;
+
+      // Operator Functions
+
+      function add (a, b) {
+        a = parseFloat(a);        // Ensure numerical addition and not string concatenation
+        b = parseFloat(b);
+        return a + b;
+    }
+
+    function subtract (a, b) {
+        return a - b;
+    }
+
+    function multiply (a, b) {
+        return a * b;
+    }
+
+    function divide (a, b) {
+        if (b == 0) {           // No division by zero
+            return;
+        }
+        return a / b;
+     }
+
+    function execute (operator, a, b) {
+        switch (operator) {
+            case "multiply":
+                return multiply(a, b);
+                break;
+            case "divide":
+                return divide(a, b);
+                break;
+            case "add":
+                return add(a, b);
+                break;
+            case "subtract":
+                return subtract(a, b);
+                break;
+        }
+    }
+
+
+      // Build display text --> limit to 15 char
+      document.addEventListener('click', function (e) {
+          if (e.target.classList.contains("number")
+                && display.textContent.length <= 14) {
+              if (executedFlag == 0) {
+                  display.textContent += e.target.textContent;
+              } else {
+                  display.textContent = e.target.textContent;
+                  executedFlag = 0;
+              }
+          } else { return }
+      });
+
+      // Delete functionality
+      document.addEventListener('click', function (e) {
+          if (e.target.id == "delete") {
+              display.textContent = display.textContent.slice(0, display.textContent.length - 1);
+          } else { return }
+      });
+
+      // Clear functionality
+      document.addEventListener('click', function (e) {
+          if (e.target.id == "clear") {
+              display.textContent = "";
+              firstParam = null;
+              secondParam = null;
+              selectedOperator = null;
+              executedFlag = 0;
+          } else { return }
+      });
+
+      // Reverse sign functionality
+      document.addEventListener('click', function (e) {
+          if (e.target.id == "reverse-sign") {
+              if (display.textContent[0] != "-") {
+                  display.textContent = "-" + display.textContent.slice(0);
+              } else  {
+                display.textContent = display.textContent.slice(1);
+              }
+            } else { return }
+      });
+
+      // Operator functionality
+      document.addEventListener('click', function (e) {
+          if (e.target.classList.contains("operator")) {
+              if (display.textContent == "") { return }
+              if (selectedOperator == null) {
+                selectedOperator = e.target.id;
+                firstParam = parseFloat(display.textContent);
+                display.textContent = "";
+              } else {
+                  secondParam = display.textContent;
+                  display.textContent = execute(selectedOperator, firstParam, secondParam);
+                  selectedOperator = e.target.id;
+                  firstParam = display.textContent;
+                  executedFlag = 1;
+              }
+                  // Round large decimals
+             if (/[\.]/.test(display.textContent) && display.textContent.length > 5) {
+                  display.textContent = Math.round(display.textContent * 1000) / 1000;
+              }
+            } else { return }
+      });
+
+      // Execute operator
+      document.addEventListener('click', function (e) {
+          if (e.target.id == "execute") {
+              secondParam = display.textContent;
+              console.log(selectedOperator, firstParam, secondParam);
+              display.textContent = execute(selectedOperator, firstParam, secondParam);
+              selectedOperator = null;
+              firstParam = null;
+              secondParam = null;
+              executedFlag = 1;
+          }
+          // Round large decimals
+          if (/[\.]/.test(display.textContent) && display.textContent.length > 5) {
+              display.textContent = Math.round(display.textContent * 1000) / 1000;
+          }
+      });
+
+      // Decimal functionality
+      document.addEventListener('click', function (e) {
+          if (e.target.id == "decimal") {
+              for (let i = 0; i < display.textContent.length; i++) {
+                  if (display.textContent[i] == ".") {
+                      return;
+                  }
+              }
+              display.textContent += ".";
+          }
+      })
+
+
+  </script>
+</html>
