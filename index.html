@@ -8,24 +8,24 @@
       <div class="calculator-container">
         <div class="calculator-display"><span class="calculator-display__text"></span></div>
         <button class="calculator-button" id="clear">AC</button>
-        <button class="calculator-button" id="delete">DEL</button>
+        <button class="calculator-button" id="delete" data-key="8">DEL</button>
         <button class="calculator-button" id="reverse-sign">+/-</button>
-        <button class="calculator-button operator" id="divide">/</button>
-        <button class="calculator-button number">7</button>
-        <button class="calculator-button number">8</button>
-        <button class="calculator-button number">9</button>
-        <button class="calculator-button operator" id="multiply">X</button>
-        <button class="calculator-button number">4</button>
-        <button class="calculator-button number">5</button>
-        <button class="calculator-button number">6</button>
-        <button class="calculator-button operator" id="subtract">-</button>
-        <button class="calculator-button number">1</button>
-        <button class="calculator-button number">2</button>
-        <button class="calculator-button number">3</button>
-        <button class="calculator-button operator" id="add">+</button>
-        <button class="calculator-button calculator-button__zero number">0</button>
-        <button class="calculator-button" id="decimal">.</button>
-        <button class="calculator-button" id="execute">=</div>
+        <button class="calculator-button operator" id="divide" data-key="111">/</button>
+        <button class="calculator-button number" data-key="103">7</button>
+        <button class="calculator-button number" data-key= "104">8</button>
+        <button class="calculator-button number" data-key="105">9</button>
+        <button class="calculator-button operator" id="multiply" data-key="106">X</button>
+        <button class="calculator-button number" data-key="100">4</button>
+        <button class="calculator-button number" data-key= "101">5</button>
+        <button class="calculator-button number" data-key="102">6</button>
+        <button class="calculator-button operator" id="subtract" data-key="109">-</button>
+        <button class="calculator-button number" data-key="97">1</button>
+        <button class="calculator-button number" data-key="98">2</button>
+        <button class="calculator-button number" data-key="99">3</button>
+        <button class="calculator-button operator" id="add" data-key="107">+</button>
+        <button class="calculator-button calculator-button__zero number" data-key="96">0</button>
+        <button class="calculator-button" id="decimal" data-key="110">.</button>
+        <button class="calculator-button" id="execute" data-key="13">=</div>
       </div>
   </body>
   <script>
@@ -91,11 +91,33 @@
           } else { return }
       });
 
+     // Add keypad functionality for numerical input 
+      document.addEventListener('keydown', function (e) {
+         let selected = document.querySelector(`button[data-key="${e.keyCode}"]`);
+         if (selected == null) { return }
+         if (selected.classList.contains("number")
+               && display.textContent.length <= 14) {
+              if (executedFlag == 0) {
+                 display.textContent += selected.textContent;
+              } else {
+                 display.textContent = selected.textContent;
+                 executedFlag = 0;
+              }
+          } else { return }
+     });
+
       // Delete functionality
       document.addEventListener('click', function (e) {
           if (e.target.id == "delete") {
               display.textContent = display.textContent.slice(0, display.textContent.length - 1);
           } else { return }
+      });
+
+      // Backspace keyboard functionality
+      document.addEventListener('keydown', function (e) {
+          let selected = document.querySelector(`button[data-key="${e.keyCode}"]`);
+          if (selected == null || selected.id != "delete") { return }
+          display.textContent = display.textContent.slice(0, display.textContent.length - 1);
       });
 
       // Clear functionality
@@ -110,7 +132,7 @@
       });
 
       // Reverse sign functionality
-      document.addEventListener('click', function (e) {
+      document.addEventListener('click', function operatorPress (e) {
           if (e.target.id == "reverse-sign") {
               if (display.textContent[0] != "-") {
                   display.textContent = "-" + display.textContent.slice(0);
@@ -137,16 +159,57 @@
               }
                   // Round large decimals
              if (/[\.]/.test(display.textContent) && display.textContent.length > 5) {
-                  display.textContent = Math.round(display.textContent * 1000) / 1000;
+                  display.textContent = Math.round(display.textContent * 100000) / 100000;
               }
             } else { return }
+      });
+
+      // Operator keyboard support
+      document.addEventListener('keydown', function (e) {
+          let selected = document.querySelector(`button[data-key="${e.keyCode}"]`);
+          if (selected == null || !selected.classList.contains("operator")) { return }
+          else {
+              if (display.textContent == "") { return }
+              if (selectedOperator == null) {
+                selectedOperator = selected.id;
+                firstParam = parseFloat(display.textContent);
+                display.textContent = "";
+              } else {
+                  secondParam = display.textContent;
+                  display.textContent = execute(selectedOperator, firstParam, secondParam);
+                  selectedOperator = selected.id;
+                  firstParam = display.textContent;
+                  executedFlag = 1;
+              }
+                  // Round large decimals
+             if (/[\.]/.test(display.textContent) && display.textContent.length > 5) {
+                  display.textContent = Math.round(display.textContent * 100000) / 100000;
+              }
+            }
       });
 
       // Execute operator
       document.addEventListener('click', function (e) {
           if (e.target.id == "execute") {
               secondParam = display.textContent;
-              console.log(selectedOperator, firstParam, secondParam);
+              display.textContent = execute(selectedOperator, firstParam, secondParam);
+              selectedOperator = null;
+              firstParam = null;
+              secondParam = null;
+              executedFlag = 1;
+          }
+          // Round large decimals
+          if (/[\.]/.test(display.textContent) && display.textContent.length > 5) {
+              display.textContent = Math.round(display.textContent * 1000) / 1000;
+          }
+      });
+
+      // Keyboard functionality for execute operator
+      document.addEventListener('keydown', function (e) {
+        let selected = document.querySelector(`button[data-key="${e.keyCode}"]`);
+        if (selected == null || selected.id != "execute") { return }
+          if (selected.id == "execute") {
+              secondParam = display.textContent;
               display.textContent = execute(selectedOperator, firstParam, secondParam);
               selectedOperator = null;
               firstParam = null;
@@ -162,15 +225,28 @@
       // Decimal functionality
       document.addEventListener('click', function (e) {
           if (e.target.id == "decimal") {
-              for (let i = 0; i < display.textContent.length; i++) {
-                  if (display.textContent[i] == ".") {
-                      return;
-                  }
-              }
-              display.textContent += ".";
+            if (/[\.]/.test(display.textContent)) { return }
+            if (executedFlag == 0) {
+            display.textContent += e.target.textContent;
+            } else {
+            display.textContent = e.target.textContent;
+                executedFlag = 0;
+        }
           }
-      })
+      });
 
+    // Add keypad functionality for decimal input 
+      document.addEventListener('keydown', function (e) {
+        let selected = document.querySelector(`button[data-key="${e.keyCode}"]`);
+        if (selected == null || selected.id != "decimal") { return }
+        if (/[\.]/.test(display.textContent)) { return }
+        if (executedFlag == 0) {
+            display.textContent += selected.textContent;
+            } else {
+            display.textContent = selected.textContent;
+                executedFlag = 0;
+        }
+      });
 
   </script>
 </html>
